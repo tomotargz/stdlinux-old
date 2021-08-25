@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 static void do_cat(FILE *f, const char *s);
-static FILE *get_file(const char *path);
 static void die(const char *s);
 
 int main(int argc, char *argv[]) {
@@ -11,15 +10,12 @@ int main(int argc, char *argv[]) {
         do_cat(stdin, "stdin");
     }
     for (int i = 1; i < argc; ++i) {
-        do_cat(get_file(argv[i]), argv[i]);
+        FILE *f = fopen(argv[i], "r");
+        if (!f) die(argv[i]);
+        do_cat(f, argv[i]);
+        if (fclose(f) == EOF) die(argv[i]);
     }
     exit(0);
-}
-
-static FILE *get_file(const char *path) {
-    FILE *f = fopen(path, "r");
-    if (!f) die(path);
-    return f;
 }
 
 #define BUFFER_SIZE 2048
@@ -33,7 +29,6 @@ static void do_cat(FILE *f, const char *s) {
         if (fwrite(buf, 1, n, stdout) < 0 && errno) die(s);
         if (feof(f)) break;
     }
-    if (fclose(f) == EOF) die(s);
 }
 
 static void die(const char *s) {

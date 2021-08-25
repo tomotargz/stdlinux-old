@@ -3,30 +3,28 @@
 #include <stdlib.h>
 
 static void do_wc(FILE *f, const char *s);
-static FILE *get_file(const char *path);
 static void die(const char *s);
-
-unsigned long long line;
 
 int main(int argc, char *argv[]) {
     if (argc == 1) {
         do_wc(stdin, "stdin");
     } else {
         for (int i = 1; i < argc; ++i) {
-            do_wc(get_file(argv[i]), argv[i]);
+            FILE *f = fopen(argv[i], "r");
+            if (!f) {
+                die(argv[i]);
+            }
+            do_wc(f, argv[i]);
+            if (fclose(f) == EOF) {
+                die(argv[i]);
+            }
         }
     }
-    printf("%lld\n", line);
-    exit(0);
-}
-
-static FILE *get_file(const char *path) {
-    FILE *f = fopen(path, "r");
-    if (!f) die(path);
-    return f;
+    return 0;
 }
 
 static void do_wc(FILE *f, const char *s) {
+    unsigned long line = 0;
     int prev = '\n';
     for (;;) {
         errno = 0;
@@ -40,7 +38,7 @@ static void do_wc(FILE *f, const char *s) {
         }
         prev = c;
     }
-    if (fclose(f) < 0) die(s);
+    printf("%lu\n", line);
 }
 
 static void die(const char *s) {
