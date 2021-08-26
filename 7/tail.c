@@ -4,7 +4,7 @@
 
 static void do_tail(FILE* f, long n);
 
-static const unsigned long DEFAULT_N_LINES = 10;
+static const long DEFAULT_N_LINES = 10;
 
 int main(int argc, char* argv[]) {
     long n = DEFAULT_N_LINES;
@@ -16,7 +16,8 @@ int main(int argc, char* argv[]) {
                 if (n < 0) exit(0);
                 break;
             case '?':
-                fprintf(stderr, "Usage: %s [-n nlines]", argv[0]);
+                fprintf(stderr, "Usage: %s [-n nlines] [FILE ...]", argv[0]);
+                exit(1);
                 break;
         }
     }
@@ -40,7 +41,7 @@ int main(int argc, char* argv[]) {
 }
 
 static void do_tail(FILE* f, long n) {
-    unsigned long l = 0;
+    long l = 0;
     int c;
     int prev = '\n';
     while ((c = getc(f)) != EOF) {
