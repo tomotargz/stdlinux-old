@@ -5,13 +5,17 @@
 
 static void do_grep(regex_t *pat, FILE *src);
 int opt_ignore_case = 0;
+int opt_invert = 0;
 
 int main(int argc, char *argv[]) {
     int opt;
-    while ((opt = getopt(argc, argv, "i")) != -1) {
+    while ((opt = getopt(argc, argv, "iv")) != -1) {
         switch (opt) {
             case 'i':
                 opt_ignore_case = 1;
+                break;
+            case 'v':
+                opt_invert = 1;
                 break;
         }
     }
@@ -50,7 +54,9 @@ int main(int argc, char *argv[]) {
 static void do_grep(regex_t *pat, FILE *src) {
     char buf[4096];
     while (fgets(buf, sizeof buf, src)) {
-        if (regexec(pat, buf, 0, NULL, 0) == 0) {
+        int match = (regexec(pat, buf, 0, NULL, 0) == 0);
+        if (opt_invert) match = !match;
+        if (match) {
             fputs(buf, stdout);
         }
     }
