@@ -1,26 +1,38 @@
+#include <getopt.h>
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 static void do_grep(regex_t *pat, FILE *src);
+int opt_ignore_case = 0;
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
+    int opt;
+    while ((opt = getopt(argc, argv, "i")) != -1) {
+        switch (opt) {
+            case 'i':
+                opt_ignore_case = 1;
+                break;
+        }
+    }
+    if (argc == optind) {
         fputs("no pattern\n", stderr);
         exit(1);
     }
     regex_t pat;
-    int err = regcomp(&pat, argv[1], REG_EXTENDED | REG_NOSUB | REG_NEWLINE);
+    int mode = REG_EXTENDED | REG_NOSUB | REG_NEWLINE;
+    if (opt_ignore_case) mode |= REG_ICASE;
+    int err = regcomp(&pat, argv[optind], mode);
     if (err != 0) {
         char buf[1024];
         regerror(err, &pat, buf, sizeof buf);
         puts(buf);
         exit(1);
     }
-    if (argc == 2) {
+    if (argc == optind + 1) {
         do_grep(&pat, stdin);
     } else {
-        for (int i = 2; i < argc; i++) {
+        for (int i = optind + 1; i < argc; i++) {
             FILE *f;
             f = fopen(argv[i], "r");
             if (!f) {
